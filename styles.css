@@ -95,7 +95,7 @@ h1 {
 
 .status-panel {
   position: absolute;
-  top: 16px;
+  top: -56px;
   left: 50%;
   z-index: 5;
   display: flex;
@@ -135,15 +135,15 @@ h1 {
 .scale-wrap {
   position: relative;
   height: 548px;
-  padding-top: 94px;
+  padding-top: 112px;
 }
 
 .scale-beam {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(250px, 1fr) 164px minmax(250px, 1fr);
+  grid-template-columns: minmax(250px, 1fr) minmax(250px, 1fr);
   align-items: start;
-  gap: 28px;
+  gap: 220px;
   transform: rotate(var(--tilt, 0deg));
   transform-origin: 50% 248px;
   transition: transform 680ms cubic-bezier(0.18, 0.9, 0.2, 1.2);
@@ -319,37 +319,36 @@ select:focus {
 }
 
 .brand-button {
-  position: relative;
-  z-index: 3;
-  justify-self: center;
-  align-self: center;
-  width: 144px;
-  height: 144px;
-  border: 0;
-  border-radius: 50%;
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  z-index: 8;
+  min-width: 168px;
+  height: 46px;
+  border: 1px solid rgba(23, 33, 29, 0.12);
+  border-radius: 999px;
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.94rem;
   font-weight: 900;
   letter-spacing: 0;
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.5), transparent 28%),
-    linear-gradient(145deg, #426d58, #17211d);
+  background: linear-gradient(135deg, #426d58, #17211d);
   box-shadow:
-    0 18px 36px rgba(40, 62, 50, 0.35),
-    inset 0 -14px 20px rgba(0, 0, 0, 0.2);
+    0 14px 30px rgba(40, 62, 50, 0.28),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.16);
   cursor: pointer;
+  transform: translateX(-50%);
   transition:
     transform 240ms ease,
     filter 240ms ease;
 }
 
 .brand-button:hover {
-  transform: translateY(-3px);
+  transform: translateX(-50%) translateY(-3px);
   filter: saturate(1.1);
 }
 
 .brand-button:active {
-  transform: scale(0.96);
+  transform: translateX(-50%) scale(0.97);
 }
 
 .brand-button.pulse {
@@ -383,7 +382,10 @@ select:focus {
 
 .food-list {
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  max-height: 292px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .empty-state {
@@ -398,22 +400,83 @@ select:focus {
 }
 
 .food-row {
-  display: grid;
-  grid-template-columns: 18px 1fr 78px 30px 28px;
-  align-items: center;
-  gap: 10px;
   padding: 10px;
   border: 1px solid rgba(23, 33, 29, 0.1);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
 }
 
+.category-main {
+  display: grid;
+  grid-template-columns: 24px minmax(72px, 1fr) 106px 28px;
+  align-items: center;
+  gap: 10px;
+}
+
 .food-row input {
   padding: 7px 8px;
 }
 
-.food-row small {
+.food-row small,
+.subfood-row em {
   color: var(--muted);
+}
+
+.category-main .food-visual {
+  width: 24px;
+  height: 24px;
+}
+
+.category-main strong,
+.category-main small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.amount-control {
+  display: grid;
+  grid-template-columns: 1fr 24px;
+  align-items: center;
+  gap: 6px;
+}
+
+.amount-control span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.subfood-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(23, 33, 29, 0.08);
+}
+
+.subfood-row {
+  display: grid;
+  grid-template-columns: 62px minmax(84px, 1fr) 54px 14px;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.subfood-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subfood-row input[type="range"] {
+  accent-color: var(--green);
+  padding: 0;
+}
+
+.subfood-row input[type="number"] {
+  padding: 5px 6px;
 }
 
 .remove-food {
@@ -623,7 +686,7 @@ select:focus {
 
   .scale-wrap {
     height: auto;
-    padding-top: 80px;
+    padding-top: 92px;
   }
 
   .scale-beam {
@@ -641,9 +704,10 @@ select:focus {
   }
 
   .brand-button {
-    order: -1;
-    width: 108px;
-    height: 108px;
+    top: 24px;
+    width: min(210px, calc(100vw - 96px));
+    min-width: 0;
+    height: 44px;
   }
 
   .insight-grid {
@@ -675,7 +739,16 @@ select:focus {
   }
 
   .food-row {
-    grid-template-columns: 18px 1fr 66px 26px 28px;
+    padding: 9px;
+  }
+
+  .category-main {
+    grid-template-columns: 22px minmax(58px, 1fr) 88px 28px;
+  }
+
+  .subfood-row {
+    grid-template-columns: 54px minmax(66px, 1fr) 48px 12px;
+    gap: 6px;
   }
 
   .food-dock {

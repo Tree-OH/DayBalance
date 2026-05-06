@@ -2,42 +2,72 @@ const foods = {
   protein: {
     name: "肉蛋奶",
     unit: "g",
-    defaultAmount: 220,
-    kcalPerUnit: 1.9,
+    defaultAmount: 0,
     color: "#bc604a",
     visualClass: "protein",
+    items: [
+      { name: "鸡胸肉", kcalPerUnit: 1.65 },
+      { name: "鸡蛋", kcalPerUnit: 1.55 },
+      { name: "牛奶", kcalPerUnit: 0.62 },
+      { name: "牛肉", kcalPerUnit: 2.5 },
+      { name: "豆腐", kcalPerUnit: 0.85 },
+    ],
   },
   vegetable: {
     name: "蔬菜",
     unit: "g",
-    defaultAmount: 500,
-    kcalPerUnit: 0.28,
+    defaultAmount: 0,
     color: "#5e8f68",
     visualClass: "vegetable",
+    items: [
+      { name: "黄瓜", kcalPerUnit: 0.16 },
+      { name: "西兰花", kcalPerUnit: 0.34 },
+      { name: "番茄", kcalPerUnit: 0.18 },
+      { name: "生菜", kcalPerUnit: 0.15 },
+      { name: "胡萝卜", kcalPerUnit: 0.41 },
+    ],
   },
   fruit: {
     name: "水果",
     unit: "g",
-    defaultAmount: 300,
-    kcalPerUnit: 0.55,
+    defaultAmount: 0,
     color: "#d75d48",
     visualClass: "fruit",
+    items: [
+      { name: "苹果", kcalPerUnit: 0.52 },
+      { name: "香蕉", kcalPerUnit: 0.89 },
+      { name: "橙子", kcalPerUnit: 0.47 },
+      { name: "草莓", kcalPerUnit: 0.32 },
+      { name: "葡萄", kcalPerUnit: 0.69 },
+    ],
   },
   grain: {
     name: "主食",
     unit: "g",
-    defaultAmount: 300,
-    kcalPerUnit: 2.35,
+    defaultAmount: 0,
     color: "#d8a744",
     visualClass: "grain",
+    items: [
+      { name: "米饭", kcalPerUnit: 1.16 },
+      { name: "面条", kcalPerUnit: 1.38 },
+      { name: "馒头", kcalPerUnit: 2.23 },
+      { name: "全麦面包", kcalPerUnit: 2.47 },
+      { name: "红薯", kcalPerUnit: 0.86 },
+    ],
   },
   drink: {
     name: "水与饮品",
     unit: "ml",
-    defaultAmount: 1600,
-    kcalPerUnit: 0.04,
+    defaultAmount: 0,
     color: "#4b89a8",
     visualClass: "drink",
+    items: [
+      { name: "白水", kcalPerUnit: 0 },
+      { name: "黑咖啡", kcalPerUnit: 0.02 },
+      { name: "拿铁", kcalPerUnit: 0.55 },
+      { name: "奶茶", kcalPerUnit: 0.75 },
+      { name: "无糖茶", kcalPerUnit: 0.01 },
+    ],
   },
 };
 
@@ -72,6 +102,20 @@ const els = {
   weekForecast: document.querySelector("#weekForecast"),
 };
 
+function createIntakeCategory(key) {
+  const food = foods[key];
+  const share = Math.floor(100 / food.items.length);
+  const remainder = 100 - share * food.items.length;
+
+  return {
+    amount: food.defaultAmount,
+    shares: food.items.map((item, index) => ({
+      name: item.name,
+      percent: share + (index === 0 ? remainder : 0),
+    })),
+  };
+}
+
 function getNeedCalories() {
   const base =
     state.person.sex === "male"
@@ -81,10 +125,19 @@ function getNeedCalories() {
   return Math.round(base * 1.45);
 }
 
+function getCategoryCalories(key, entry) {
+  const food = foods[key];
+  const weightedKcal = entry.shares.reduce((sum, share, index) => {
+    return sum + (share.percent / 100) * food.items[index].kcalPerUnit;
+  }, 0);
+
+  return entry.amount * weightedKcal;
+}
+
 function getIntakeCalories() {
   return Math.round(
-    Object.entries(state.intake).reduce((sum, [key, amount]) => {
-      return sum + amount * foods[key].kcalPerUnit;
+    Object.entries(state.intake).reduce((sum, [key, entry]) => {
+      return sum + getCategoryCalories(key, entry);
     }, 0),
   );
 }
@@ -99,8 +152,9 @@ function clamp(value, min, max) {
 }
 
 function addFood(key) {
-  const food = foods[key];
-  state.intake[key] = (state.intake[key] || 0) + food.defaultAmount;
+  if (!(key in state.intake)) {
+    state.intake[key] = createIntakeCategory(key);
+  }
   render(true);
 }
 
@@ -109,6 +163,33 @@ function updatePersonFromInputs() {
   state.person.sex = els.sex.value;
   state.person.height = Number(els.height.value) || state.person.height;
   state.person.weight = Number(els.weight.value) || state.person.weight;
+  render(true);
+}
+
+function setShare(key, index, value) {
+  const shares = state.intake[key].shares;
+  const nextValue = clamp(Number(value) || 0, 0, 100);
+  const remaining = 100 - nextValue;
+  const others = shares.filter((_, itemIndex) => itemIndex !== index);
+  const currentOtherTotal = others.reduce((sum, item) => sum + item.percent, 0);
+
+  shares[index].percent = nextValue;
+
+  if (!others.length) {
+    render(true);
+    return;
+  }
+
+  let used = 0;
+  others.forEach((item, otherIndex) => {
+    const isLast = otherIndex === others.length - 1;
+    const nextPercent = currentOtherTotal
+      ? Math.round((item.percent / currentOtherTotal) * remaining)
+      : Math.floor(remaining / others.length);
+    item.percent = isLast ? remaining - used : nextPercent;
+    used += item.percent;
+  });
+
   render(true);
 }
 
@@ -124,26 +205,62 @@ function renderFoodList() {
     return;
   }
 
-  entries.forEach(([key, amount]) => {
+  entries.forEach(([key, entry]) => {
     const food = foods[key];
     const row = document.createElement("div");
-    row.className = "food-row";
+    const totalShare = entry.shares.reduce((sum, item) => sum + item.percent, 0);
+    row.className = "food-row category-row";
     row.innerHTML = `
-      <span class="food-visual ${food.visualClass}" aria-hidden="true"></span>
-      <strong>${food.name}</strong>
-      <input type="number" min="0" step="10" value="${amount}" aria-label="${food.name}重量，单位${food.unit}" />
-      <small>${food.unit}</small>
-      <button class="remove-food" type="button" aria-label="移除${food.name}">×</button>
+      <div class="category-main">
+        <span class="food-visual ${food.visualClass}" aria-hidden="true"></span>
+        <div>
+          <strong>${food.name}</strong>
+          <small>${Math.round(getCategoryCalories(key, entry))} kcal · 占比 ${totalShare}%</small>
+        </div>
+        <label class="amount-control">
+          <input type="number" min="0" step="10" value="${entry.amount}" aria-label="${food.name}总量，单位${food.unit}" />
+          <span>${food.unit}</span>
+        </label>
+        <button class="remove-food" type="button" aria-label="移除${food.name}">×</button>
+      </div>
+      <div class="subfood-list"></div>
     `;
 
-    row.querySelector("input").addEventListener("input", (event) => {
-      state.intake[key] = Number(event.target.value) || 0;
-      render(true, false);
+    row.querySelector(".amount-control input").addEventListener("input", (event) => {
+      entry.amount = Number(event.target.value) || 0;
+      row.querySelector(".category-main small").textContent =
+        `${Math.round(getCategoryCalories(key, entry))} kcal · 占比 ${totalShare}%`;
+      renderDockValues();
+      renderStatus();
+      renderTilt(true);
     });
 
-    row.querySelector("button").addEventListener("click", () => {
+    row.querySelector(".remove-food").addEventListener("click", () => {
       delete state.intake[key];
       render(true);
+    });
+
+    const subfoodList = row.querySelector(".subfood-list");
+    entry.shares.forEach((share, index) => {
+      const item = food.items[index];
+      const sub = document.createElement("label");
+      sub.className = "subfood-row";
+      sub.innerHTML = `
+        <span>${item.name}</span>
+        <input type="range" min="0" max="100" step="5" value="${share.percent}" aria-label="${item.name}占比" />
+        <input type="number" min="0" max="100" step="5" value="${share.percent}" aria-label="${item.name}占比数字" />
+        <em>%</em>
+      `;
+
+      sub.querySelector('input[type="range"]').addEventListener("input", (event) => {
+        setShare(key, index, event.target.value);
+      });
+
+      sub.querySelector('input[type="number"]').addEventListener("input", (event) => {
+        setShare(key, index, event.target.value);
+      });
+
+      subfoodList.append(sub);
     });
 
     els.foodList.append(row);
@@ -153,7 +270,8 @@ function renderFoodList() {
 function renderDockValues() {
   document.querySelectorAll(".food-card").forEach((card) => {
     const key = card.dataset.key;
-    const amount = state.intake[key] || 0;
+    const entry = state.intake[key];
+    const amount = entry ? entry.amount : 0;
     const unit = foods[key].unit;
     card.querySelector("small").textContent = `${amount} ${unit}`;
   });
