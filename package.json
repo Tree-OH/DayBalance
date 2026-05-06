@@ -1,0 +1,13 @@
+{
+  "name": "daybalance",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DayBalance diet health balance prototype",
+  "scripts": {
+    "start": "npx serve .",
+    "check": "node --check app.js"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

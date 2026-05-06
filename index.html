@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DayBalance</title>
+    <meta
+      name="description"
+      content="DayBalance 是一个饮食健康监管 AI 产品原型，通过天平交互模拟个人身体需求与每日摄入的平衡关系。"
+    />
+    <meta property="og:title" content="DayBalance" />
+    <meta
+      property="og:description"
+      content="拖拽食物卡片、编辑身体数据，观察一天摄入与身体需求如何影响天平平衡。"
+    />
+    <meta property="og:type" content="website" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-label="DayBalance 控制台">
+        <div>
+          <p class="eyebrow">Diet Health Prototype</p>
+          <h1>DayBalance</h1>
+        </div>
+        <div class="summary-strip" aria-live="polite">
+          <span id="balanceLabel">正在计算</span>
+          <strong id="balanceScore">0%</strong>
+        </div>
+      </section>
+
+      <section class="balance-stage">
+        <div class="status-panel">
+          <span class="status-dot" id="statusDot"></span>
+          <div>
+            <p id="statusTitle">营养摄入评估</p>
+            <strong id="statusText">拖入食物卡片开始</strong>
+          </div>
+        </div>
+
+        <div class="scale-wrap">
+          <div class="scale-beam" id="scaleBeam">
+            <article class="pan person-pan" aria-label="个人数据">
+              <div class="person-avatar" id="personAvatar" draggable="true" title="拖动我，或修改下方数据">
+                <span class="head"></span>
+                <span class="body"></span>
+                <span class="legs"></span>
+              </div>
+              <div class="person-card">
+                <label>
+                  年龄
+                  <input id="ageInput" type="number" min="6" max="95" value="28" />
+                </label>
+                <label>
+                  性别
+                  <select id="sexInput">
+                    <option value="female">女</option>
+                    <option value="male">男</option>
+                  </select>
+                </label>
+                <label>
+                  身高
+                  <input id="heightInput" type="number" min="110" max="220" value="168" />
+                  <span>cm</span>
+                </label>
+                <label>
+                  体重
+                  <input id="weightInput" type="number" min="25" max="180" step="0.1" value="58" />
+                  <span>kg</span>
+                </label>
+              </div>
+            </article>
+
+            <button class="brand-button" id="balanceButton" type="button">
+              DayBalance
+            </button>
+
+            <article class="pan food-pan" id="foodPan" aria-label="一天摄入量投放区">
+              <div class="food-pan-header">
+                <p>今日摄入</p>
+                <button id="clearButton" type="button" title="清空摄入">清空</button>
+              </div>
+              <div class="food-list" id="foodList">
+                <p class="empty-state">把下方卡片拖到这里</p>
+              </div>
+            </article>
+          </div>
+
+          <div class="scale-center">
+            <span class="pivot"></span>
+            <span class="stand"></span>
+            <span class="base"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="insight-grid" aria-label="营养建议">
+        <article>
+          <span>基础消耗</span>
+          <strong id="needCalories">-- kcal</strong>
+        </article>
+        <article>
+          <span>今日摄入</span>
+          <strong id="intakeCalories">-- kcal</strong>
+        </article>
+        <article>
+          <span>一周预测</span>
+          <strong id="weekForecast">等待平衡</strong>
+        </article>
+      </section>
+    </main>
+
+    <nav class="food-dock" aria-label="食物卡片">
+      <button class="food-card" draggable="true" data-key="protein" type="button">
+        <span class="food-visual protein"></span>
+        <strong>肉蛋奶</strong>
+        <small>0 g</small>
+      </button>
+      <button class="food-card" draggable="true" data-key="vegetable" type="button">
+        <span class="food-visual vegetable"></span>
+        <strong>蔬菜</strong>
+        <small>0 g</small>
+      </button>
+      <button class="food-card" draggable="true" data-key="fruit" type="button">
+        <span class="food-visual fruit"></span>
+        <strong>水果</strong>
+        <small>0 g</small>
+      </button>
+      <button class="food-card" draggable="true" data-key="grain" type="button">
+        <span class="food-visual grain"></span>
+        <strong>主食</strong>
+        <small>0 g</small>
+      </button>
+      <button class="food-card" draggable="true" data-key="drink" type="button">
+        <span class="food-visual drink"></span>
+        <strong>水与饮品</strong>
+        <small>0 ml</small>
+      </button>
+    </nav>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
